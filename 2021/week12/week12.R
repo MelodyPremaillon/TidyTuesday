@@ -16,62 +16,83 @@ library(ggridges)
 library(plotly)
 library(lubridate)
 
-font_add_google("Montserrat", "Montserrat")
-font_add_google("Lobster","Lobster")
-font_add_google("Rubik", "Rubik")
-showtext_auto()
 
-# Get the Data
+font_add_google("Rubik", "Rubik")
+
+# Get the Data5
 tuesdata <- tidytuesdayR::tt_load('2021-03-16')
 tuesdata <- tidytuesdayR::tt_load(2021, week = 12)
 games <- tuesdata$games
 rm(tuesdata)
-games$avg_peak_perc2 <- as.numeric(str_replace(games$avg_peak_perc, "%",""))
 games$date <- as.Date(paste(games$year, match(games$month, month.name), 1, sep="/"))
 
 ###Creating a data frame with the games that record more than 150 000 players playing simultenaously the month they where released
-releaseddates <- games %>% group_by(gamename) %>% summarise(releasedate = min(date)) #df of release date for each game
-games$key <- paste(games$gamename, games$date) #creating key for merging
+releaseddates <- games %>% 
+  group_by(gamename) %>% 
+  summarise(releasedate = min(date)) #df of release date for each game
+
+games$key <- paste(games$gamename, games$date) #creating key for merging "games" data
 releaseddates$key <- paste(releaseddates$gamename, releaseddates$releasedate)
 
 releasedata <- merge(games, releaseddates, by= "key") %>% 
-  filter(peak > 150000) %>%
-  arrange(desc(peak)) #df  
+  filter(peak > 200000) %>%
+  arrange(desc(peak)) #df of games with more than 200.000 simultaneous player the month they were released and all games data
+
+#releasedatatot <- merge(games, releaseddates, by= "key")  
+
+monthmax <- games %>% group_by(date) %>% summarise(avgplay = max(peak, na.rm = T))
 
 
 ###Plotting the data
-myplot <- ggplot(releasedata, aes(date, peak)) + geom_bar(stat="identity",  fill= "#3C7C9C", alpha=0.4) +
+bckgdcol <- "#171A21"
+
+#myplot <-
+  
+myplot <- ggplot(releasedata, aes(date, peak)) + 
+  geom_bar(stat="identity",  fill= "#3C7C9C") +
   coord_flip() + 
-  geom_text(aes(date, label= gamename.x), 
+  geom_line(data=monthmax, aes(date, avgplay), alpha=0.5, color="#F28D35") + 
+  geom_text(aes(date, label= toupper(gamename.x)), 
             color= "#C6C5C1", family= "Rubik", 
-            size=6,
-            hjust=0.2) +
+            size=5,
+            hjust=0) +
+  
   ###axes
-  scale_y_continuous(breaks = seq(100000,900000, by=100000),
-                     labels = seq(100,900,by=100),
-                     limits = c(0,1005000),
-                     name = "SIMULTANEOUS PLAYERS PEAK \n[thousands of players]") + 
+  scale_y_continuous(breaks = seq(0,4E6, by=1E6),
+                     labels = seq(0,4,by=1),
+                     limits = c(0,4E6),
+                     name = "Highest number of players at the same time \n[in millions]") + 
   scale_x_date(date_breaks = "1 year", date_labels = "%Y", 
                date_minor_breaks = "1 month",
-               name= toupper("Release date")) +
+               name= "") +
   ##theme
   theme(
-    panel.background = element_rect(fill="#183D57"),
-    plot.background = element_rect(fill="#183D57"),
-    panel.grid.major = element_line(color = "#1B1F26", size=0.8),
+    panel.background = element_rect(fill=bckgdcol),
+    plot.background = element_rect(fill=bckgdcol, color=bckgdcol),
+    panel.grid.major = element_blank(), #element_line(color = "#1B1F26", size=0.8),
     panel.grid.minor.x =  element_blank(),
-    panel.grid.minor.y =  element_line(color="#1B1F26",size=0.2),
+    panel.grid.minor.y =  element_blank(), #element_line(color="#1B1F26",size=0.2),
     axis.title = element_text(size=16),
     axis.text = element_text(size=12,color="#3C7C9C"),
     text = element_text(family = "Rubik",color="#3C7C9C"),
-  )
+    axis.ticks.x = element_line(color="#3C7C9C")
+  ) +
+  annotate("text",x = as.Date("2013/01/01"), y=350000, label="Monthly maximum",
+           color="#F28D35", hjust=0, alpha = 0.5, size=4) +
+  annotate(geom = "curve", x = as.Date("2017/01/01"), y = 3E6, xend = as.Date("2018/01/01"), yend = 3.27E6, 
+           curvature = .3, arrow = arrow(length = unit(2, "mm")), color="#F28D35", alpha=0.8) +
+  annotate("text",x=as.Date("2016/08/01"),y=2.9E6, label="PUBG record \n3.2M people playing at the same time",
+           color="#F28D35", hjust=0.5, alpha = 0.5, size=3.5)
 
-final_plot <- myplot + plot_annotation(title="Entrées les plus fracassantes",
-                                       subtitle = "Games that record more than 150 000 players simultaneously <br>
-                                       the month they were released",                                  
-                                       theme = theme(text = element_text('Rubik',  colour = "#C1C0BB"),
-                                                     plot.title = element_text(face = "bold", size = 20, hjust = 0.5),
-                                                     plot.subtitle = element_markdown(size = 14, hjust = 0.5),
-                                                     plot.background = element_rect(fill ="#183D57", color="#183D57"),
-                                                     plot.margin = unit(c(1, 0, 0, 0), "cm")))  
+myplot
+
+final_plot <- myplot + plot_annotation(title="STEAM'S BEST RELEASE",
+                                       subtitle = "<br>The 7 over 1258 games with more than 200.000 simultaneous player the month they were released. <br>
+                                                          ",                                  
+                                       theme = theme(text = element_text('Rubik',  colour = "#F28D35"),
+                                                     plot.title = element_text(face = "bold", size = 25, hjust = 0),
+                                                     plot.subtitle = element_markdown(size = 12, hjust = 0, color= "#C6C5C1"),
+                                                     plot.background = element_rect(fill =bckgdcol, color=bckgdcol)))  
 final_plot
+
+ggsave("tidytuestay21_week12.png", width=8,height=7,units = "cm")
