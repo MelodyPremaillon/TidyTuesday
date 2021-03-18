@@ -1,4 +1,4 @@
-#TidyTuesday challenge week12 : Video Games and Sliced
+# TidyTuesday challenge week12 : Video Games and Sliced
 
 For this first contribution I decided to plot the max peak of simultaneous playes for the games that recorded mor than 200.000 players in the same time the month they were released. Only 7 games over 1258 reaches that number of player!
 
