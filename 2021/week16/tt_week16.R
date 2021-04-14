@@ -1,3 +1,11 @@
+## US post offices
+
+#The data this week comes from Cameron Blevins and Richard W. Helbock
+#Blevins, Cameron; Helbock, Richard W., 2021, "US Post Offices", https://doi.org/10.7910/DVN/NUKCNA, Harvard Dataverse, V1, UNF:6:8ROmiI5/4qA8jHrt62PpyA== [fileUNF]
+#Credit: [Melody Premaillon](@Melau_Yellau)
+
+
+
 # Get the Data
 library(pacman)
 pacman::p_load(tidyverse, plotly, cowplot, magick, showtext, extrafont, ggtext, lubridate, ragg, 
@@ -98,9 +106,14 @@ This chart shows the evolution of the farest post offices from Boston from 1639 
              family = "Montserrat", x = 0, hjust= 0, size = 12, vjust=0.5) + 
   theme(plot.background = element_rect(fill=backcol, color = backcol))
 
+caption <- ggdraw() + 
+  draw_text("viz Mélody Prémaillon | 2021, tidy tuesday 15 | data : Blevins, Cameron; Helbock, Richard W., 2021", 
+            family = "Montserrat", x = 1,  hjust= 1, size = 9) + 
+  theme(plot.background = element_rect(fill=backcol, color = backcol))
+
 plotss <- plot_grid( map, leplot, ncol = 2, rel_widths = c(1.6,1)) 
 
-plot_grid(title, subtitle,plotss, nrow=3, rel_heights = c(0.3,0.8,3))
+plot_grid(title, subtitle,plotss, caption, nrow=4, rel_heights = c(0.3,0.8,3,0.1))
 
   
   
